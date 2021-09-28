@@ -17,7 +17,7 @@ The usual notions of lawfulness (as in [[https://arxiv.org/abs/1809.00738]["Cate
 
 The library follows, where possible, the style of combinators of the [[https://github.com/ekmett/lens/wiki/operators][lens library]].  Example code from [[https://arxiv.org/abs/2001.07488]["Profunctor optics: a categorical update"]] works directly under the library. 
 
-*** Example 1. (Lenses and prisms)
+*** Example 1. Lenses and prisms
 
 The composition of a prism (~address~) and a lens (~street~)
 is used to parse a string and then access and modify one of its
@@ -34,7 +34,7 @@ street :: Lens String Address
   "4 Marylebone Rd, London, UK"
 #+end_src
 
-*** Example 2. (Monadic lenses)
+*** Example 2. Monadic lenses
 
 A polymorphic family of type-changing monadic lenses
 for a logging monad is used to track each time a data holder
@@ -52,7 +52,7 @@ box :: (Show b) => MonadicLens IO a b (Box a) (Box b)
   Box{"world"}
 #+end_src
 
-*** Example 3. (Algebraic lenses)
+*** Example 3. Algebraic lenses
 
 A classifying lens (~measure~) is used both for accessing
 a the measurements of a point in the iris dataset and to classify
@@ -72,7 +72,7 @@ measure :: AlgLens [] Measurements Flower
   Iris Versicolor (4.8, 3.1, 1.5, 0.1)
 #+end_src
 
-*** Example 4. (Traversals)
+*** Example 4. Traversals
 
 The composition of a traversal (~each~) with a prism
 (~address~) and a lens (~city~) is used to parse a collection of strings
@@ -95,7 +95,7 @@ city :: Lens String Address
   ]
 #+end_src haskell
 
-*** Example 5. (Kaleidoscopes)
+*** Example 5. Kaleidoscopes
 
 Following the previous Example 3, a kaleidoscope
 (~aggregate~) is composed with an algebraic lens to create a new

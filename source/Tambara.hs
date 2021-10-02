@@ -34,33 +34,41 @@ import Text.Printf
 import Categories
 import CategoriesInstances
 
--- | Unified definition of a mixed optic, enriched over Hask (from "Profunctor
--- optics, a categorical update", Definition 2.1).
+
 data Optic objc c objd d objm m o i f g a b s t where
   Optic :: ( MonoidalAction objm m o i objc c f
            , MonoidalAction objm m o i objd d g
            , objc a, objc s , objd b, objd t , objm x )
         => c s (f x a) -> d (g x b) t
         -> Optic objc c objd d objm m o i f g a b s t
+{-^
+  Unified definition of a mixed optic, enriched over Hask (from "Profunctor
+  optics, a categorical update", Definition 2.1).
+-}
 
--- | Generalized Tambara modules for a pair of monoidal actions on possibly
--- different categories.
 class ( MonoidalAction objm m o i objc c f
       , MonoidalAction objm m o i objd d g
       , Profunctor objc c objd d p )
       => Tambara objc c objd d objm m o i f g p where
-  tambara :: (objc x, objd y, objm w)
+tambara :: (objc x, objd y, objm w)
           => p x y -> p (f w x) (g w y)
+{-^
+  Generalized Tambara modules for a pair of monoidal actions on possibly
+  different categories.
+-}
 
--- | Unified definition of Profunctor optic in terms of Tambara modules. This is
--- the Yoneda representation of the category of optics, with Tambara modules as
--- copresheaves.
+
 type ProfOptic objc c objd d objm m o i f g a b s t = forall p .
   ( Tambara objc c objd d objm m o i f g p
   , MonoidalAction objm m o i objc c f
   , MonoidalAction objm m o i objd d g
   , objc a , objd b , objc s , objd t
   ) => p a b -> p s t
+{-^ 
+  Unified definition of Profunctor optic in terms of Tambara modules. This is
+  the Yoneda representation of the category of optics, with Tambara modules as
+  copresheaves.
+-}
 
 instance ( MonoidalAction objm m o i objc c f
          , MonoidalAction objm m o i objd d g
@@ -76,17 +84,20 @@ instance ( MonoidalAction objm m o i objc c f
     (comp @objc @c (multiplicator @objm @m @o @i @objc @c @f) (bimap @objm @m @objc @c @objc @c (unit @objm @m) l))
     (comp @objd @d (bimap @objm @m @objd @d @objd @d (unit @objm @m) r) (multiplicatorinv @objm @m @o @i @objd @d @g))
 
--- | Transforms an existential optic into its profunctor representation. This is
--- one side of a Yoneda embedding.
+
 ex2prof :: forall objc c objd d objm m o i f g a b s t .
        Optic     objc c objd d objm m o i f g a b s t 
     -> ProfOptic objc c objd d objm m o i f g a b s t
+{-^
+  Transforms an existential optic into its profunctor representation. This is
+  one side of a Yoneda embedding.
+-}
+
 ex2prof (Optic l r) =
   dimap @objc @c @objd @d l r .
   tambara @objc @c @objd @d @objm @m @o @i
 
--- | Transforms a profunctor optic into its existential representation. This is
--- the other side of a Yoneda embedding.
+
 prof2ex :: forall objc c objd d objm m o i f g a b s t .
     ( MonoidalAction objm m o i objc c f
     , MonoidalAction objm m o i objd d g
@@ -94,6 +105,11 @@ prof2ex :: forall objc c objd d objm m o i f g a b s t .
     , objd b , objd t )
     => ProfOptic objc c objd d objm m o i f g a b s t 
     -> Optic     objc c objd d objm m o i f g a b s t
+{-^
+  Transforms a profunctor optic into its existential representation. This is
+  the other side of a Yoneda embedding.
+-}
+
 prof2ex p = p (Optic
     (unitorinv @objm @m @o @i @objc @c @f) 
     (unitor @objm @m @o @i @objd @d @g))

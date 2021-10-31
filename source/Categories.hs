@@ -16,129 +16,132 @@ module Categories where
 
 -- | Definition of a category enriched over the language. The sets of objects
 -- are represented by constraints.
-class Category obj_c hom_c where
-  unit :: (obj_c x) => hom_c x x                        
-  comp :: (obj_c x) => hom_c y z -> hom_c x y -> hom_c x z
+class Category ob_c hom_c where
+  unit :: (ob_c x) => hom_c x x                        
+  comp :: (ob_c x) => hom_c y z -> hom_c x y -> hom_c x z
 
 
 -- | Functors.
 class (
-  Category obj_c hom_c,
-  Category obj_d hom_d,
-  forall x . obj_c x => obj_d (f x)
+  Category ob_c hom_c,
+  Category ob_d hom_d,
+  forall x . ob_c x => ob_d (f x)
 ) 
-=> VFunctor objc c objd d f where
+=> VFunctor ob_c hom_c ob_d hom_d f where
 
-  map :: (obj_c x, obj_c y) => hom_c x y -> hom_d (f x) (f y)
+  map :: (ob_c x, ob_c y) => hom_c x y -> hom_d (f x) (f y)
 
 
 -- | Bifunctors.
 class (
-  Category obj_c hom_c,
-  Category obj_d hom_d,
-  Category obj_e hom_e,
-  forall x y. (obj_c x , obj_d y) => obj_e (f x y)
+  Category ob_c hom_c,
+  Category ob_d hom_d,
+  Category ob_e hom_e,
+  forall x y. 
+    (ob_c x , ob_d y)
+    => ob_e (f x y)
 )
-=> Bifunctor 
-     obj_c hom_c 
-     obj_d hom_d 
-     obj_e hom_e f 
+=> Bifunctor ob_c hom_c
+             ob_d hom_d
+             ob_e hom_e f 
 where
 
   bimap :: (
-    obj_c x1,
-    obj_c x2,
-    obj_d y1,
-    obj_d y2
+    ob_c x1,
+    ob_c x2,
+    ob_d y1,
+    ob_d y2
   )
-  => hom_c x1 x2 -> hom_d y1 y2 -> hom_e (f x1 y1) (f x2 y2)
+  => hom_c x1 x2 
+     -> hom_d y1 y2
+     -> hom_e (f x1 y1) (f x2 y2)
 
 
 -- | Profunctors.
 class (
-  Category obj_c hom_c,
-  Category obj_d hom_d
+  Category ob_c hom_c,
+  Category ob_d hom_d
 )
-=> Profunctor obj_c hom_c obj_d hom_d p
+=> Profunctor ob_c hom_c ob_d hom_d p
 where
 
   dimap :: (
-    objc x1,
-    objc x2,
-    objd y1,
-    objd y2
+    ob_c x1,
+    ob_c x2,
+    ob_d y1,
+    ob_d y2
    )
-   => hom_c x2 x1 -> hom_d y1 y2 -> p x1 y1 -> p x2 y2
+   => hom_c x2 x1
+      -> hom_d y1 y2
+      -> p x1 y1 
+      -> p x2 y2
 
 
 -- | Monoidal categories.
 -- The definition follows that of a enriched monoidal category, taking Hask as the base of enrichment.
 class (
-  Category obj_a hom_a,
+  Category ob_a hom_a,
   Bifunctor
-    obj_a hom_a
-    obj_a hom_a 
-    obj_a hom_a m,
-  obj_a i
+    ob_a hom_a
+    ob_a hom_a 
+    ob_a hom_a m,
+  ob_a i
 )
-=> MonoidalCategory obj_a hom_a o i 
+=> MonoidalCategory ob_a hom_a m i 
 where
   
   alpha:: (
-    obj_a x,
-    obj_a y,
-    obj_a z
+    ob_a x,
+    ob_a y,
+    ob_a z
   ) 
-  => hom_a (M x (M y z)) (M (M x y) z)
+  => hom_a 
+       (m x (m y z))
+       (m (m x y) z)
   
   alphainv:: (
-    obj_a x,
-    obj_a y,
-    obj_a z
+    ob_a x,
+    ob_a y,
+    ob_a z
   )
-  => hom_a (M x (M y z)) (M (M x y) z)
+  => hom_a (m x (m y z))
+           (m (m x y) z)
   
-  lambda    :: (obja x) => a (m x i) x
-
-  lambdainv :: (obja x) => a x (m x i)
-
-  rho       :: (obja x) => a (i `o` x) x
-
-  rhoinv    :: (obja x) => a x (i `o` x)
+  lambda    :: (ob_a x) => hom_a (m x i) x
+  lambdainv :: (ob_a x) => hom_a x (m x i)
+  rho       :: (ob_a x) => hom_a (m i x) x
+  rhoinv    :: (ob_a x) => hom_a x (m i x)
 
 
 -- | Monoidal actions as suitable bifunctors with the corresponding structure
 -- maps.
 class (
-  MonoidalCategory obj_m hom_m m i,
-  Bifunctor 
-    obj_m hom_m
-    obj_c hom_c
-    obj_c hom_c f,
-  Category objc c
+  MonoidalCategory ob_m hom_m m i,
+  Bifunctor ob_m hom_m
+            ob_c hom_c
+            ob_c hom_c f,
+  Category ob_c hom_c
 )
-=> MonoidalAction 
-     obj_m hom_m o i
-     obj_c hom_c f 
+=> MonoidalAction ob_m hom_m o i
+                  ob_c hom_c f 
 where
   
-  unitor :: (obj_c x) => hom_c (f i x) x
-  
-  unitorinv :: (obj_c x) => hom_c x (f i x)
+  unitor :: (ob_c x) => hom_c (f i x) x
+  unitorinv :: (ob_c x) => hom_c x (f i x)
   
   multiplicator :: (
-    obj_c x,
-    obj_m p,
-    obj_m q
+    ob_c x,
+    ob_m p,
+    ob_m q
   )
   => hom_c 
        (f p (f q x))
        (f (m p q) x) 
   
   multiplicatorinv :: (
-    objc x
-    objm p,
-    objm q
+    ob_ x
+    ob_m p,
+    ob_m q
    )
    => hom_c 
         (f (m p q) x)
